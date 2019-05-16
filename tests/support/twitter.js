@@ -17,8 +17,14 @@ const getBearerToken = (key, secret)=>{
     let p = new Promise((resolve, reject)=>{
         let please = request(info, async (response)=>{
             let body = await bodyOf(response)
-            let data = JSON.parse(body)
-            resolve(data['access_token'])
+            try {
+                let data = JSON.parse(body)
+                if (data['token_type'] != 'bearer') { reject('token_type: expected bearer but was ' + data['token_type']) }
+                resolve(data['access_token'])
+            }
+            catch (e) {
+                reject(e)
+            }
         })
         please.on('error', (e)=>{
             reject(e)
@@ -40,7 +46,12 @@ const fetch = async (endpoint, bearerToken)=>{
     let p = new Promise((resolve, reject)=>{
         let please = request(info, async (response)=>{
             let body = await bodyOf(response)
-            resolve(JSON.parse(body))
+            try {
+                resolve(JSON.parse(body))
+            }
+            catch (e) {
+                reject(e)
+            }
         })
         please.on('error', (e)=>{
             reject(e)

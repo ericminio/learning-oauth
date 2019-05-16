@@ -1,39 +1,27 @@
 const { expect } = require('chai')
 const { request } = require('https')
-const token = (credentials)=>{
-    return encodeURIComponent(credentials.key) + ':' + encodeURIComponent(credentials.secret)
-}
-const encodedToken = (credentials)=>{
-    let token = encodeURIComponent(credentials.key) + ':' + encodeURIComponent(credentials.secret)
-    return Buffer.from(token).toString('base64')
-}
+const KEY = process.env.CONSUMER_KEY
+const SECRET = process.env.CONSUMER_SECRET
 
-describe('oauth', ()=>{
+const bearerTokenRequest = (key, secret)=> {
+    let tokenCredentials = Buffer.from(
+        encodeURIComponent(key) + ':' + encodeURIComponent(secret))
+        .toString('base64')
 
-    it('requires a token credentials', ()=>{
-        let credentials = {
-            key: 'xvz1evFS4wEEPTGEFPHBog',
-            secret: 'L8qq9PZyRg6ieKGEKhZolGC0vJWLw8iEJ88DRdyOg'
+    return {
+        method: 'POST',
+        host: 'api.twitter.com',
+        path: '/oauth2/token',
+        headers: {
+            'Authorization': 'Basic ' + tokenCredentials,
+            'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
         }
-
-        expect(encodedToken(credentials)).to.equal('eHZ6MWV2RlM0d0VFUFRHRUZQSEJvZzpMOHFxOVBaeVJnNmllS0dFS2hab2xHQzB2SldMdzhpRUo4OERSZHlPZw==')
-    })
+    }
+}
+describe('oauth with twitter', ()=>{
 
     it('requires a bearer token', (done)=>{
-        let credentials = {
-            key: process.env.CONSUMER_KEY,
-            secret: process.env.CONSUMER_SECRET
-        }
-        let token = encodedToken(credentials)
-        var bearerPlease = {
-            method: 'POST',
-            host: 'api.twitter.com',
-            path: '/oauth2/token',
-            headers: {
-                'Authorization': 'Basic ' + token,
-                'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
-            }
-        }
+        var bearerPlease = bearerTokenRequest(KEY, SECRET)
         var action = request(bearerPlease, (response)=>{
             var answer = ''
             response.on('data', (chunk)=>{
@@ -55,20 +43,7 @@ describe('oauth', ()=>{
     })
 
     it('gives you power', (done)=>{
-        let credentials = {
-            key: process.env.CONSUMER_KEY,
-            secret: process.env.CONSUMER_SECRET
-        }
-        let token = encodedToken(credentials)
-        var bearerPlease = {
-            method: 'POST',
-            host: 'api.twitter.com',
-            path: '/oauth2/token',
-            headers: {
-                'Authorization': 'Basic ' + token,
-                'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
-            }
-        }
+        var bearerPlease = bearerTokenRequest(KEY, SECRET)
         var action = request(bearerPlease, (response)=>{
             var answer = ''
             response.on('data', (chunk)=>{
